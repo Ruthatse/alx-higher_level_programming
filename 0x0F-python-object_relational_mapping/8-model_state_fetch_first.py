@@ -1,26 +1,29 @@
 #!/usr/bin/python3
-""" Script: list the first STate object fmor the db """
-from model_state import State, Base
-from sqlalchemy import Column, Integer, String, create_engine
-from sqlalchemy.orm import sessionmaker
-import sys
+"""
+Prints the first State object from the database hbtn_0e_6_usa
+"""
 
 if __name__ == "__main__":
-    if len(sys.argv) == 4:
-        usr_name = sys.argv[1]
-        usr_pass = sys.argv[2]
-        usr_db = sys.argv[3]
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy import create_engine
+    from model_state import Base, State
+    from sys import argv
 
-        engine = create_engine("mysql+mysqldb://{}:{}@localhost:3306/{}".
-                               format(usr_name, usr_pass, usr_db))
-        Session = sessionmaker(bind=engine)
+    if (len(argv) != 4):
+        print('Use: username, password database_name')
+        exit(1)
 
-        session = Session()
-        try:
-            state = session.query(State).first()
-            print("{}: {}".format(state.id, state.name))
-        except:
-            print("Nothing")
-        session.close()
+    engine = create_engine('mysql+mysqldb://{}:{}@localhost/{}'.format(
+        argv[1], argv[2], argv[3]), pool_pre_ping=True)
+    Base.metadata.create_all(engine)
+
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    state = session.query(State).order_by(State.id).first()
+
+    if (state is None):
+        print('Nothing')
     else:
-        print("my sql username pass db")
+        print('{:d}: {:s}'.format(state.id, state.name))
+    session.close()
