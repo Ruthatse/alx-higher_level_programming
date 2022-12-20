@@ -1,27 +1,29 @@
 #!/usr/bin/python3
-""" Script: lists all city objects """
-from model_state import State
-from model_city import City
-from sqlalchemy import Column, Integer, String, create_engine
-from sqlalchemy.orm import sessionmaker
-import sys
+"""
+Prints all City objects from the database hbtn_0e_14_usa
+"""
 
 if __name__ == "__main__":
-    if len(sys.argv) == 4:
-        usr_name = sys.argv[1]
-        usr_pass = sys.argv[2]
-        usr_db = sys.argv[3]
-        engine = create_engine("mysql+mysqldb://{}:{}@localhost:3306/{}".
-                               format(usr_name, usr_pass, usr_db))
-        Session = sessionmaker(bind=engine)
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy import create_engine
+    from model_state import Base, State
+    from model_city import City
+    from sys import argv
 
-        session = Session()
-        for cities in session.query(City).\
-                order_by(City.id).\
-                all():
-                    print("{}: ({}) {}".format(
-                        cities.state.name, cities.id, cities.name))
+    if (len(argv) != 4):
+        print('Use: username, password database_name')
+        exit(1)
 
-        session.close()
-    else:
-        print("my sql username pass db ")
+    engine = create_engine('mysql+mysqldb://{}:{}@localhost/{}'.format(
+        argv[1], argv[2], argv[3]), pool_pre_ping=True)
+    Base.metadata.create_all(engine)
+
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    result = session.query(State, City.id, City).filter(
+        City.state_id == State.id).order_by(City.id).all()
+
+    for row in result:
+        print(f'{row.State.name}: ({row.id}) {row.City.name}')
+    session.close()
