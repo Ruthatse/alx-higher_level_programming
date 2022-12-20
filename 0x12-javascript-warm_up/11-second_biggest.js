@@ -1,23 +1,13 @@
 #!/usr/bin/node
-if (process.argv.length <= 3) {
-  console.log(0);
-  process.exit();
+
+const { argv } = require('process');
+const args = argv.slice(2);
+let result = 0;
+let finalArray = [];
+
+if (args.length > 1) {
+  finalArray = [...new Set(args.map((e) => parseInt(e)).sort((a, b) => b - a))];
+  result = finalArray.length > 1 ? finalArray[1] : finalArray[0];
 }
-const li = process.argv;
-let max = li[2];
-let low = li[3];
-for (let i = 3; i < process.argv.length; i += 1) {
-  if (Number(li[i]) === Number(max)) {
-    li.splice(i);
-  }
-  if (Number(li[i]) > Number(max)) {
-    low = max;
-    max = li[i];
-  }
-  if (i == process.argv.length) {
-    if (low < li[i] < max) { 
-      low = li[i];
-    }
-  }
-}
-console.log(low);
+
+console.log(result);
